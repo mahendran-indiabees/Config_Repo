@@ -1,6 +1,6 @@
-To securely store and manage Robusta's secret sink credentials (e.g., API keys, configuration) using the Sealed Secrets method in your existing AKS cluster, you can follow this comprehensive step-by-step guide.
+#### To securely store and manage Robusta's secret sink credentials (e.g., API keys, configuration) using the Sealed Secrets method in your existing AKS cluster, you can follow this comprehensive step-by-step guide.
 
-Step 1: Install Sealed Secrets Controller in AKS
+## Step 1: Install Sealed Secrets Controller in AKS
 Add the Sealed Secrets Helm Repository:
 
 ```
@@ -14,12 +14,12 @@ helm install sealed-secrets sealed-secrets/sealed-secrets --namespace kube-syste
 ```
 Verify Installation: Check if the controller is running:
 
-````
+```
 kubectl get pods -n kube-system | grep sealed-secrets
 ```
 The output should show the sealed-secrets-controller pod running.
 
-Step 2: Create and Encrypt Robusta Credentials
+## Step 2: Create and Encrypt Robusta Credentials
 Prepare a Secret File: Create a Kubernetes Secret manifest (robusta-secret.yaml) to hold the sink credentials. Replace <base64_encoded_value> with actual Base64-encoded credentials:
 
 ```
@@ -38,7 +38,7 @@ To encode values to Base64, use:
 ```
 echo -n 'your_value' | base64
 ```
-Encrypt the Secret Using kubeseal: Use the public key of the Sealed Secrets controller to encrypt the secret:
+## Encrypt the Secret Using kubeseal: Use the public key of the Sealed Secrets controller to encrypt the secret:
 
 ```
 kubeseal --controller-name=sealed-secrets-controller --controller-namespace=kube-system --format=yaml < robusta-secret.yaml > robusta-sealed-secret.yaml
@@ -47,10 +47,11 @@ The output file robusta-sealed-secret.yaml contains an encrypted version of the 
 
 Verify the Encrypted Secret: Open and inspect robusta-sealed-secret.yaml to confirm it’s encrypted.
 
-Step 3: Store Sealed Secret in Version Control
+## Step 3: Store Sealed Secret in Version Control
 Add robusta-sealed-secret.yaml to your Git repository:
 It is safe to store sealed secrets in your version control system because they cannot be decrypted without the private key stored in the Sealed Secrets controller.
-Step 4: Apply the Sealed Secret to AKS
+
+## Step 4: Apply the Sealed Secret to AKS
 Deploy the Sealed Secret: Apply the sealed secret to your AKS cluster:
 
 ```
@@ -63,7 +64,7 @@ kubectl get secret robusta-secret -n robusta
 ```
 You should see the robusta-secret in the namespace robusta.
 
-Step 5: Reference the Secret in Robusta Values
+## Step 5: Reference the Secret in Robusta Values
 Modify the values.yaml for Robusta: Update the values.yaml file to use the existing secret:
 
 ```
@@ -99,7 +100,8 @@ Security:
 
 Only the cluster with the corresponding private key (managed by the Sealed Secrets controller) can decrypt the secret.
 Secrets remain encrypted and secure even if the sealed secret file is leaked.
-Step 6: Automate with GitLab CI/CD
+
+## Step 6: Automate with GitLab CI/CD
 Store Public Key in GitLab:
 
 Export the public key of the Sealed Secrets controller:
